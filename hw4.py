@@ -1,11 +1,12 @@
 import sys
 from constants import *
 
-input_file = open("test.elf", "rb")
-stream = input_file.read()
+# input_file = open("test.elf", "rb")
+
 
 try:
     input_file = open(sys.argv[1], "rb")
+    stream = input_file.read()
     out = open(sys.argv[2], "w")
 except FileNotFoundError:
     print("file: {0} is not found".format(sys.argv[1]))
@@ -145,12 +146,17 @@ class parsed_commands:
 
 
 def get_param(start, sz: list[int]):
-    s = []
-    for i in range(len(sz)):
-        s.append(get_bytes(start, sz[i]))
-        start += sz[i]
-    return s
+    try:
 
+
+        s = []
+        for i in range(len(sz)):
+            s.append(get_bytes(start, sz[i]))
+            start += sz[i]
+        return s
+    except IndexError:
+        print("Incorrect elf file")
+        exit()
 
 def get_elf_header() -> elf_header:
     sz = [16, 2, 2, 4, 4, 4, 4, 4, 2, 2, 2, 2, 2, 2]
