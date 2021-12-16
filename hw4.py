@@ -215,18 +215,6 @@ def get_name_start(start: int) -> str:
             nm += chr(get_byte(i))
         i += 1
 
-
-def write_symtab(sym_tab_entries: list[symtab_entry]) -> None:
-    # fl.write("Symbol Value            Size Type     Bind     Vis       Index Name\n")
-    # for x in sym_tab_entries:
-    # fl.write(x + "\n")
-    pass
-
-
-def parse_code():
-    pass
-
-
 def get_command(number: int, command_length: int):
 
     bits = []
