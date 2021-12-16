@@ -1,9 +1,6 @@
 import sys
 from constants import *
 
-# input_file = open("test.elf", "rb")
-
-
 try:
     input_file = open(sys.argv[1], "rb")
     stream = input_file.read()
@@ -148,7 +145,6 @@ class parsed_commands:
 def get_param(start, sz: list[int]):
     try:
 
-
         s = []
         for i in range(len(sz)):
             s.append(get_bytes(start, sz[i]))
@@ -157,6 +153,7 @@ def get_param(start, sz: list[int]):
     except IndexError:
         print("Incorrect elf file")
         exit()
+
 
 def get_elf_header() -> elf_header:
     sz = [16, 2, 2, 4, 4, 4, 4, 4, 2, 2, 2, 2, 2, 2]
@@ -215,6 +212,7 @@ def get_name_start(start: int) -> str:
             nm += chr(get_byte(i))
         i += 1
 
+
 def get_command(number: int, command_length: int):
 
     bits = []
@@ -261,11 +259,11 @@ def output_command16(cmd: command16):
                 rs2 = reg_rvc[int(cmd.get_bits(2, 4), 2)]
                 rs1 = reg_rvc[int(cmd.get_bits(7, 9), 2)]
                 uimm = int(cmd.get_bits(5, 5) + cmd.get_bits(10, 12) +
-                        cmd.get_bits(6, 6), 2) * 4
+                           cmd.get_bits(6, 6), 2) * 4
                 match funct3:
                     case "000":
                         imm = int(cmd.get_bits(7, 10) + cmd.get_bits(11, 12) +
-                                cmd.get_bits(5, 5) + cmd.get_bits(6, 6), 2) * 4
+                                  cmd.get_bits(5, 5) + cmd.get_bits(6, 6), 2) * 4
                         if imm == 0:
                             return "unknown_command"
                         nm = "c.addi4spn"
@@ -299,8 +297,8 @@ def output_command16(cmd: command16):
                         nm = "c.jal"
                         has_offset = True
                         offset = int(cmd.get_bits(8, 8) + cmd.get_bits(10, 10) +
-                                    cmd.get_bits(9, 9) + cmd.get_bits(6, 6) + cmd.get_bits(7, 7) +
-                                    cmd.get_bits(2, 2) + cmd.get_bits(11, 11) + cmd.get_bits(3, 5), 2) * 2 - int(cmd.get_bits(12, 12)) * 2048
+                                     cmd.get_bits(9, 9) + cmd.get_bits(6, 6) + cmd.get_bits(7, 7) +
+                                     cmd.get_bits(2, 2) + cmd.get_bits(11, 11) + cmd.get_bits(3, 5), 2) * 2 - int(cmd.get_bits(12, 12)) * 2048
                         offset_to_jump_command = offset
                         return "{nm}".format(nm=nm, off=offset)
 
@@ -325,7 +323,8 @@ def output_command16(cmd: command16):
                                 rd = reg[int(cmd.get_bits(7, 11), 2)]
                                 return "c.lui {rd}, {nzimm}".format(rd=rd, nzimm=nzimm)
                     case "100":
-                        nzuimm = int(cmd.get_bits(12, 12) + cmd.get_bits(2, 6), 2)
+                        nzuimm = int(cmd.get_bits(12, 12) +
+                                     cmd.get_bits(2, 6), 2)
                         rd = reg_rvc[int(cmd.get_bits(7, 9), 2)]
                         imm = int(cmd.get_bits(2, 6), 2) - \
                             int(cmd.get_bits(12, 12)) * 32
@@ -351,8 +350,8 @@ def output_command16(cmd: command16):
                         nm = "c.j"
                         has_offset = True
                         offset = int(cmd.get_bits(8, 8) + cmd.get_bits(10, 10) +
-                                    cmd.get_bits(9, 9) + cmd.get_bits(6, 6) + cmd.get_bits(7, 7) +
-                                    cmd.get_bits(2, 2) + cmd.get_bits(11, 11) + cmd.get_bits(3, 5), 2) * 2 - int(cmd.get_bits(12, 12)) * 2048
+                                     cmd.get_bits(9, 9) + cmd.get_bits(6, 6) + cmd.get_bits(7, 7) +
+                                     cmd.get_bits(2, 2) + cmd.get_bits(11, 11) + cmd.get_bits(3, 5), 2) * 2 - int(cmd.get_bits(12, 12)) * 2048
 
                         offset_to_jump_command = offset
                         return "{nm}".format(nm=nm, offset=offset)
@@ -360,7 +359,7 @@ def output_command16(cmd: command16):
                     case "110":
                         has_offset = True
                         offset = int(cmd.get_bits(12, 12) + cmd.get_bits(5, 6) +
-                                    cmd.get_bits(2, 2) + cmd.get_bits(10, 11) + cmd.get_bits(3, 4), 2) * 2 - 2 * 256 * int(cmd.get_bits(12, 12))
+                                     cmd.get_bits(2, 2) + cmd.get_bits(10, 11) + cmd.get_bits(3, 4), 2) * 2 - 2 * 256 * int(cmd.get_bits(12, 12))
                         offset_to_jump_command = offset
                         rs1 = reg_rvc[int(cmd.get_bits(7, 9), 2)]
                         return "c.beqz {rs1}".format(rs1=rs1, offset=offset)
@@ -368,7 +367,7 @@ def output_command16(cmd: command16):
 
                         has_offset = True
                         offset = int(cmd.get_bits(12, 12) + cmd.get_bits(5, 6) +
-                                    cmd.get_bits(2, 2) + cmd.get_bits(10, 11) + cmd.get_bits(3, 4), 2) * 2 - 2 * 256 * int(cmd.get_bits(12, 12))
+                                     cmd.get_bits(2, 2) + cmd.get_bits(10, 11) + cmd.get_bits(3, 4), 2) * 2 - 2 * 256 * int(cmd.get_bits(12, 12))
                         offset_to_jump_command = offset
                         rs1 = reg_rvc[int(cmd.get_bits(7, 9), 2)]
                         return "c.bnez {rs1}".format(rs1=rs1, offset=offset)
@@ -378,12 +377,13 @@ def output_command16(cmd: command16):
                 match funct3:
                     case "000":
                         rs1 = reg[int(cmd.get_bits(7, 11), 2)]
-                        nzuimm = int(cmd.get_bits(12, 12) + cmd.get_bits(2, 6), 2)
+                        nzuimm = int(cmd.get_bits(12, 12) +
+                                     cmd.get_bits(2, 6), 2)
                         return "c.slli {rs1}, {nzuimm}".format(rs1=rs1, nzuimm=nzuimm)
                     case "010":
                         rd = reg[int(cmd.get_bits(7, 11), 2)]
                         uimm = int(cmd.get_bits(2, 3) + cmd.get_bits(12,
-                                12) + cmd.get_bits(4, 6), 2) * 4
+                                                                     12) + cmd.get_bits(4, 6), 2) * 4
                         return "c.lwsp {rd}, {uimm}(sp)".format(rd=rd, uimm=uimm)
 
                     case "100":
@@ -413,7 +413,8 @@ def output_command16(cmd: command16):
 
                     case "110":
                         nm = "c.swsp"
-                        uimm = int(cmd.get_bits(7, 8) + cmd.get_bits(9, 12), 2) * 4
+                        uimm = int(cmd.get_bits(7, 8) +
+                                   cmd.get_bits(9, 12), 2) * 4
                         rs2 = reg[int(cmd.get_bits(2, 6), 2)]
                         return "{nm} {rs2}, {uimm}(sp)".format(nm=nm, rs2=rs2, uimm=uimm)
                     case _:
@@ -609,7 +610,7 @@ def parse_command(start: int) -> str:
 
 hd = get_elf_header()
 number_of_sections = hd.e_shnum
-number_of_symtab_entries = 0
+number_of_symtab_entries = None
 
 sections = []
 symtab_entries = []
@@ -621,8 +622,8 @@ right_label_dict = dict()
 symtab_name_offset = None
 symtab_offset = None
 code_offset = None
-
 loc_counter = 0
+
 
 for i in range(hd.e_shnum):
     sections.append(get_section(hd.e_shoff + i * SECTION_SIZE))
@@ -643,6 +644,12 @@ for sect in sections:
         code_size = sect.sh_size
         code_address = sect.sh_addr
 
+
+if symtab_name_offset is None or symtab_offset is None \
+        or code_offset is None or number_of_symtab_entries is None:
+
+    print("Elf file is incorrect")
+    exit()
 
 for i in range(number_of_symtab_entries):
     symtab_entries.append(get_symtab_entry(
