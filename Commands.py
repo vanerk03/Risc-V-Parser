@@ -1,5 +1,6 @@
 from Constants import *
 
+
 class Command32:
     def __init__(self, opcode, rd, funct3, rs1, imm, full):
         self.opcode = opcode
@@ -40,3 +41,5 @@ class ParsedCommand:
         self.num = num
         self.command = command
         self.offset = offset
+
+

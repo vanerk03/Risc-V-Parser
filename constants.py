@@ -1,6 +1,7 @@
 ELF_HEADER_SIZE = 52
 SECTION_SIZE = 40
 SYMTAB_ENTRY_SIZE = 16
+unknown = ("unknown_command", False, None)
 
 binds = {
     0: "LOCAL",
