@@ -6,7 +6,6 @@ def output_command16(cmd: Command16):
     funct3 = cmd.funct3
     opcode = cmd.opcode
     nm = ""
-
     try:
         match opcode:
             case "00":
@@ -22,7 +21,7 @@ def output_command16(cmd: Command16):
                             return unknown
                         nm = "c.addi4spn"
                         rd = reg_rvc[int(cmd.get_bits(2, 4), 2)]
-                        return "{nm} {rd}, sp, {imm}".format(nm=nm, rd=rd, imm=imm), False, None
+                        return f"{nm} {rd}, sp, {imm}", False, None
 
                     case "010":
                         nm = "c.lw"
@@ -32,7 +31,7 @@ def output_command16(cmd: Command16):
                     case _:
                         return unknown
 
-                return "{nm} {rs2}, {uimm}({rs1})".format(nm=nm, rs1=rs1, rs2=rs2, uimm=uimm), False, None
+                return f"{nm} {rs2}, {uimm}({rs1})", False, None
 
             case "01":
                 match funct3:
@@ -46,36 +45,34 @@ def output_command16(cmd: Command16):
                             rs1 = reg[int(cmd.get_bits(7, 11), 2)]
                             imm = int(cmd.get_bits(2, 6), 2) - \
                                 int(cmd.get_bits(12, 12)) * 32
-                            return "{nm} {rs1}, {imm}".format(nm=nm, rs1=rs1, imm=imm), False, None
+                            return f"{nm} {rs1}, {imm}", False, None
                     case "001":
                         nm = "c.jal"
-                        has_offset = True
                         offset = int(cmd.get_bits(8, 8) + cmd.get_bits(10, 10) +
                                      cmd.get_bits(9, 9) + cmd.get_bits(6, 6) + cmd.get_bits(7, 7) +
                                      cmd.get_bits(2, 2) + cmd.get_bits(11, 11) + cmd.get_bits(3, 5), 2) * 2 - int(cmd.get_bits(12, 12)) * 2048
-                        offset_to_jump_command = offset
-                        return "{nm}".format(nm=nm), True, offset
+                        return f"{nm}", True, offset
 
                     case "010":
                         nm = "c.li"
                         rd = reg[int(cmd.get_bits(7, 11), 2)]
                         imm = int(cmd.get_bits(2, 6), 2) - \
                             32 * int(cmd.get_bits(12, 12))
-                        return "{nm} {rd}, {imm}".format(nm=nm, rd=rd, imm=imm), False, None
+                        return f"{nm} {rd}, {imm}", False, None
                     case "011":
                         match int(cmd.get_bits(7, 11), 2):
                             case 2:
                                 nm = "c.addi16sp"
                                 nzimm = int(cmd.get_bits(3, 4) + cmd.get_bits(5, 5) + cmd.get_bits(
                                     2, 2) + cmd.get_bits(6, 6), 2) * 16 - 512 * int(cmd.get_bits(12, 12))
-                                return "{nm} sp, {nzimm}".format(nm=nm, nzimm=nzimm), False, None
+                                return f"{nm} sp, {nzimm}", False, None
                             case 0:
                                 return unknown
                             case _:
                                 nzimm = int(cmd.get_bits(12, 12) +
                                             cmd.get_bits(2, 6), 2) * 4096
                                 rd = reg[int(cmd.get_bits(7, 11), 2)]
-                                return "c.lui {rd}, {nzimm}".format(rd=rd, nzimm=nzimm), False, None
+                                return f"c.lui {rd}, {nzimm}", False, None
                     case "100":
                         nzuimm = int(cmd.get_bits(12, 12) +
                                      cmd.get_bits(2, 6), 2)
@@ -99,31 +96,25 @@ def output_command16(cmd: Command16):
                                 rs2 = reg_rvc[int(cmd.get_bits(2, 4), 2)]
                                 rs1 = reg_rvc[int(cmd.get_bits(7, 9), 2)]
                                 # rs1 = rd
-                                return "{nm} {rs1}, {rs2}".format(nm=nm, rs1=rs1, rs2=rs2), False, None
+                                return f"{nm} {rs1}, {rs2}", False, None
                     case "101":
                         nm = "c.j"
-                        has_offset = True
                         offset = int(cmd.get_bits(8, 8) + cmd.get_bits(10, 10) +
                                      cmd.get_bits(9, 9) + cmd.get_bits(6, 6) + cmd.get_bits(7, 7) +
                                      cmd.get_bits(2, 2) + cmd.get_bits(11, 11) + cmd.get_bits(3, 5), 2) * 2 - int(cmd.get_bits(12, 12)) * 2048
 
-                        offset_to_jump_command = offset
-                        return "{nm}".format(nm=nm, offset=offset), True, offset
+                        return f"{nm}", True, offset
 
                     case "110":
-                        has_offset = True
                         offset = int(cmd.get_bits(12, 12) + cmd.get_bits(5, 6) +
                                      cmd.get_bits(2, 2) + cmd.get_bits(10, 11) + cmd.get_bits(3, 4), 2) * 2 - 2 * 256 * int(cmd.get_bits(12, 12))
-                        offset_to_jump_command = offset
                         rs1 = reg_rvc[int(cmd.get_bits(7, 9), 2)]
-                        return "c.beqz {rs1}".format(rs1=rs1), True, offset
+                        return f"c.beqz {rs1}", True, offset
                     case "111":
-                        has_offset = True
                         offset = int(cmd.get_bits(12, 12) + cmd.get_bits(5, 6) +
                                      cmd.get_bits(2, 2) + cmd.get_bits(10, 11) + cmd.get_bits(3, 4), 2) * 2 - 2 * 256 * int(cmd.get_bits(12, 12))
-                        offset_to_jump_command = offset
                         rs1 = reg_rvc[int(cmd.get_bits(7, 9), 2)]
-                        return "c.bnez {rs1}".format(rs1=rs1, offset=offset), True, offset
+                        return f"c.bnez {rs1}", True, offset
                     case _:
                         return unknown
             case "10":
@@ -132,12 +123,12 @@ def output_command16(cmd: Command16):
                         rs1 = reg[int(cmd.get_bits(7, 11), 2)]
                         nzuimm = int(cmd.get_bits(12, 12) +
                                      cmd.get_bits(2, 6), 2)
-                        return "c.slli {rs1}, {nzuimm}".format(rs1=rs1, nzuimm=nzuimm), False, None
+                        return f"c.slli {rs1}, {nzuimm}", False, None
                     case "010":
                         rd = reg[int(cmd.get_bits(7, 11), 2)]
                         uimm = int(cmd.get_bits(2, 3) + cmd.get_bits(12,
                                                                      12) + cmd.get_bits(4, 6), 2) * 4
-                        return "c.lwsp {rd}, {uimm}(sp)".format(rd=rd, uimm=uimm), False, None
+                        return f"c.lwsp {rd}, {uimm}(sp)", False, None
 
                     case "100":
                         match int(cmd.get_bits(2, 6), 2):
@@ -149,27 +140,25 @@ def output_command16(cmd: Command16):
                                         rs1 = reg[int(cmd.get_bits(7, 11), 2)]
 
                                         if cmd.get_bits(12, 12) == "0":
-                                            return "c.jr {rs1}".format(rs1=rs1), False, None
+                                            return f"c.jr {rs1}", False, None
                                         else:
-                                            return "c.jalr {rs1}".format(rs1=rs1), False, None
+                                            return f"c.jalr {rs1}", False, None
                             case _:
                                 rd = reg[int(cmd.get_bits(7, 11), 2)]
                                 rs2 = reg[int(cmd.get_bits(2, 6), 2)]
 
                                 if cmd.get_bits(12, 12) == "0":
                                     nm = "c.mv"
-
-                                    return nm + " " + rd + ", " + rs2, False, None
                                 else:
                                     nm = "c.add"
-                                    return nm + " " + rd + ", " + rs2, False, None
-
+                                return f"{nm} {rd}, {rs2}", False, None
+                                 
                     case "110":
                         nm = "c.swsp"
                         uimm = int(cmd.get_bits(7, 8) +
                                    cmd.get_bits(9, 12), 2) * 4
                         rs2 = reg[int(cmd.get_bits(2, 6), 2)]
-                        return "{nm} {rs2}, {uimm}(sp)".format(nm=nm, rs2=rs2, uimm=uimm), False, None
+                        return f"{nm} {rs2}, {uimm}(sp)", False, None
                     case _:
                         unknown
             case _:
@@ -199,9 +188,6 @@ def output_command32(cmd: Command32):
                 nm = ""
                 temp_imm = int(cmd.get_bits(31, 31) + cmd.get_bits(12, 19) +
                                cmd.get_bits(20, 20) + cmd.get_bits(21, 30), 2) * 2 - (1 << 21) * int(cmd.get_bits(31, 31))
-                has_offset = True
-                offset_to_jump_command = temp_imm
-
                 return "jal {rd}".format(rd=reg[rd]), True, temp_imm
 
             case "1100111":
@@ -223,8 +209,6 @@ def output_command32(cmd: Command32):
                 temp_imm = int(cmd.get_bits(31, 31) + cmd.get_bits(7, 7)
                                + cmd.get_bits(25, 30) + cmd.get_bits(8, 11), 2) * 2 - 4096 * 2 * int(cmd.get_bits(31, 31))
 
-                has_offset = True
-                offset_to_jump_command = temp_imm
                 rs2 = int(cmd.get_bits(20, 24), 2)
 
                 return "{nm} {rs1}, {rs2}".format(nm=nm, rs1=reg[rs1], rs2=reg[rs2]), True, temp_imm
@@ -321,7 +305,7 @@ def output_command32(cmd: Command32):
                             nm = "ecall"
                         else:
                             nm = "ebreak"
-                        return "{nm}".format(nm=nm), False, None
+                        return f"{nm}", False, None
                     case "001":
                         return "csrrw {rd}, {csr}, {rs1}".format(rd=reg[rd], csr=reg_csr[csr], rs1=reg[uimm]), False, None
                     case "010":
