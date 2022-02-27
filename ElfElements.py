@@ -53,7 +53,8 @@ class SymtabEntry:
                  st_other,
                  st_shndx,
                  symtab_name_offset,
-                 parser: Parser) -> None:
+                 parser
+                 ) -> None:
 
         self.st_name = st_name
         self.st_value = st_value
@@ -68,14 +69,13 @@ class SymtabEntry:
 
         # fields we get from st_other
         self.vis = vises[st_other & 0x3]
-        self.name = ""
+
         # fields we get from index
         if self.st_shndx in special.keys():
             self.index = special[self.st_shndx]
         else:
             self.index = self.st_shndx
-            self.name = parser.get_name_start(
-            self.st_name + symtab_name_offset)
+        self.name = parser.get_name_start(self.st_name + symtab_name_offset)
 
     def get_res(self, num: int):
 

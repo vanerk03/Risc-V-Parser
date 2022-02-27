@@ -3,55 +3,6 @@ from Commands import *
 import Parser
 
 
-
-class SymtabEntry:
-    def __init__(self,
-                 st_name,
-                 st_value,
-                 st_size,
-                 st_info,
-                 st_other,
-                 st_shndx, 
-                 symtab_entry_offset, 
-                 parser
-                 ) -> None:
-
-        self.st_name = st_name
-        self.st_value = st_value
-        self.st_size = st_size
-        self.st_info = st_info
-        self.st_other = st_other
-        self.st_shndx = st_shndx
-
-        # fields we get from st_info
-        self.bind = binds[st_info >> 4]
-        self.type = types[st_info & 0xf]
-
-        # fields we get from st_other
-        self.vis = vises[st_other & 0x3]
-
-        # fields we get from index
-        if self.st_shndx in special.keys():
-            self.index = special[self.st_shndx]
-        else:
-            self.index = self.st_shndx
-        global symtab_name_offset
-        self.name = parser.get_name_start(self.st_name + symtab_name_offset)
-
-    def get_res(self, num: int):
-
-        return "{Symbol} {Value} {Size} {Type} {Bind} {Vis} {Index} {Name}".format(
-            Symbol="[%s]" % str(num).rjust(4),
-            Value=hex(self.st_value).ljust(17),
-            Size=str(self.st_size).rjust(5),
-            Type=self.type.ljust(8),
-            Bind=self.bind.ljust(8),
-            Vis=self.vis.ljust(8),
-            Index=str(self.index).rjust(6),
-            Name=self.name
-        )
-
-
 def output_command16(cmd: Command16):
 
     global offset_to_jump_command, has_offset
@@ -407,11 +358,11 @@ def parse_command(start: int) -> str:
     if first_bits == 2:
         command = parser.get_command(parser.get_bytes(start, 4), 32)
         return output_command32(command), 4
-        # it consists of 32 bits
     else:
         command = parser.get_command(parser.get_bytes(start, 4), 16)
         return output_command16(command), 2
-        # it consists of 16 bits
+
+
 if __name__ == "__main__":
     try:
         input_file = open(input("input filename: "), "rb")
@@ -439,7 +390,6 @@ if __name__ == "__main__":
     code_offset = None
     loc_counter = 0
 
-
     for i in range(hd.e_shnum):
         sections.append(parser.get_section(hd.e_shoff + i * SECTION_SIZE))
 
@@ -459,7 +409,6 @@ if __name__ == "__main__":
             code_size = sect.sh_size
             code_address = sect.sh_addr
 
-
     if symtab_name_offset is None or symtab_offset is None \
             or code_offset is None or number_of_symtab_entries is None:
 
@@ -472,7 +421,6 @@ if __name__ == "__main__":
         if symtab_entries[i].name != "":
             left_label_dict[symtab_entries[i].st_value] = symtab_entries[i].name
 
-
     i = code_offset
     end = code_offset + code_size
     print(".text", file=out)
@@ -482,7 +430,6 @@ if __name__ == "__main__":
     has_offset = False
 
     parsed_code = []
-
 
     while i < end:
         left_lbl, right_lbl = False, False
@@ -494,7 +441,8 @@ if __name__ == "__main__":
             left_lbl = left_label_dict[num]
 
         if has_offset and left_label_dict.__contains__(num + offset_to_jump_command):
-            right_label_dict[num] = left_label_dict[num + offset_to_jump_command]
+            right_label_dict[num] = left_label_dict[num +
+                                                    offset_to_jump_command]
 
         if has_offset:
             offset = offset_to_jump_command
@@ -503,7 +451,6 @@ if __name__ == "__main__":
 
         i += bits
         cnt += bits
-
 
     for i in range(len(parsed_code)):
 
@@ -528,7 +475,6 @@ if __name__ == "__main__":
                     hex(loc_counter)[2:].rjust(5, '0'))
                 loc_counter += 1
                 left_label_dict[new_num] = right_label_dict[num]
-
 
     for i in range(len(parsed_code)):
         code = parsed_code[i]
@@ -557,7 +503,6 @@ if __name__ == "__main__":
             hex(num)[2:].rjust(8, '0'), left_lbl.rjust(11, " "),
             res, right_lbl
         ), file=out)
-
 
     print(file=out)
     print(".symtab", file=out)
